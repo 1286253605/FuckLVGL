@@ -23,6 +23,9 @@ static lv_color_t buf[ screenWidth * 10 ];
 //屏幕驱动
 TFT_eSPI tft=TFT_eSPI();
 
+//任务、
+void lv_task_handler_rtos(void *param);
+
 /*-------------------LVGL事件回调---------------------*/
 void btn_test_callback(lv_event_t* event){
     Serial.println("Clicked");
@@ -125,7 +128,7 @@ void setup() {
     lv_indev_drv_register(&indev_drv);
 
     //任务的优先级和分配的内存大小 按照韦东山的例程
-    xTaskCreate(lv_task_handler_rtos,"RTOS",512,NULL,tskIDLE_PRIORITY+3,NULL);
+    xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
     lv_create_btn_test();
 
     
@@ -139,12 +142,17 @@ void loop() {
   //lv_conf.h文件中使能 #define LV_TICK_CUSTOM 1  即可不用手动配置心跳
     // lv_timer_handler();
     // delay(5);
-    vTaskDelay(5);
+    vTaskDelay(pdMS_TO_TICKS(5));
     
 }
 
 /*---------------------FreeRTOS Tasks----------------*/
 void lv_task_handler_rtos(void *param){
-    lv_timer_handler();
-    vTaskDelay(pdMS_TO_TICKS(5));
+    TickType_t xLastWakeTimer=xTaskGetTickCount();
+    for(;;){
+        lv_task_handler();
+        vTaskDelay(pdMS_TO_TICKS(5));
+        vTaskDelayUntil(&xLastWakeTimer,pdMS_TO_TICKS(5));
+    }
+
 }
