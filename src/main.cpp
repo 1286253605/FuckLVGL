@@ -1,148 +1,150 @@
-/*
- An example analogue clock using a TFT LCD screen to show the time
- use of some of the drawing commands with the library.
+#include <Arduino.h>
+#include<SPI.h>
+#include<lvgl.h>
+#include<TFT_eSPI.h>
 
- For a more accurate clock, it would be better to use the RTClib library.
- But this is just a demo. 
- 
- This sketch uses font 4 only.
+/*-------------------宏定义---------------------*/
+#define TFT_ROTATIOON 0
+#define SCR_WIDTH 240
+#define SCR_HEIGHT 320
 
- Make sure all the display driver and pin connections are correct by
- editing the User_Setup.h file in the TFT_eSPI library folder.
 
- #########################################################################
- ###### DON'T FORGET TO UPDATE THE User_Setup.h FILE IN THE LIBRARY ######
- #########################################################################
- 
- Based on a sketch by Gilchrist 6/2/2014 1.0
- */
-#include<Arduino.h>
-#include <SPI.h>
-#include <TFT_eSPI.h> // Hardware-specific library
+/*-------------------全局变量---------------------*/
 
-#define TFT_GREY 0x5AEB
 
-TFT_eSPI tft = TFT_eSPI();       // Invoke custom library
+//屏幕分辨率
+static const uint16_t screenWidth  = SCR_WIDTH;
+static const uint16_t screenHeight = SCR_HEIGHT;
 
-float sx = 0, sy = 1, mx = 1, my = 0, hx = -1, hy = 0;    // Saved H, M, S x & y multipliers
-float sdeg=0, mdeg=0, hdeg=0;
-uint16_t osx=120, osy=120, omx=120, omy=120, ohx=120, ohy=120;  // Saved H, M, S x & y coords
-uint16_t x0=0, x1=0, yy0=0, yy1=0;
-uint32_t targetTime = 0;                    // for next 1 second timeout
+//屏幕缓冲区
+static lv_disp_draw_buf_t draw_buf;
+static lv_color_t buf[ screenWidth * 10 ];
 
-static uint8_t conv2d(const char* p); // Forward declaration needed for IDE 1.6.x
-uint8_t hh=conv2d(__TIME__), mm=conv2d(__TIME__+3), ss=conv2d(__TIME__+6);  // Get H, M, S from compile time
+//屏幕驱动
+TFT_eSPI tft=TFT_eSPI();
 
-bool initial = 1;
+/*-------------------LVGL事件回调---------------------*/
+void btn_test_callback(lv_event_t* event){
+    Serial.println("Clicked");
+}
 
-void setup(void) {
-  tft.init();
-  tft.setRotation(0);
-  
-  //tft.fillScreen(TFT_BLACK);
-  //tft.fillScreen(TFT_RED);
-  //tft.fillScreen(TFT_GREEN);
-  //tft.fillScreen(TFT_BLUE);
-  //tft.fillScreen(TFT_BLACK);
-  tft.fillScreen(TFT_GREY);
-  
-  tft.setTextColor(TFT_WHITE, TFT_GREY);  // Adding a background colour erases previous text automatically
-  
-  // Draw clock face
-  tft.fillCircle(120, 120, 118, TFT_GREEN);
-  tft.fillCircle(120, 120, 110, TFT_BLACK);
+/*-------------------LVGL控件---------------------*/
+//LVGL控件
+void lv_create_btn_test(void){
+    lv_obj_t *btn_test =lv_btn_create(lv_scr_act());
+    lv_obj_t *label_test=lv_label_create(btn_test);
 
-  // Draw 12 lines
-  for(int i = 0; i<360; i+= 30) {
-    sx = cos((i-90)*0.0174532925);
-    sy = sin((i-90)*0.0174532925);
-    x0 = sx*114+120;
-    yy0 = sy*114+120;
-    x1 = sx*100+120;
-    yy1 = sy*100+120;
+    lv_obj_set_size(btn_test,100,50);
 
-    tft.drawLine(x0, yy0, x1, yy1, TFT_GREEN);
-  }
+    lv_obj_align(btn_test,LV_ALIGN_TOP_MID,0,0);
+    lv_obj_align(label_test,LV_ALIGN_CENTER,0,0);
 
-  // Draw 60 dots
-  for(int i = 0; i<360; i+= 6) {
-    sx = cos((i-90)*0.0174532925);
-    sy = sin((i-90)*0.0174532925);
-    x0 = sx*102+120;
-    yy0 = sy*102+120;
-    // Draw minute markers
-    tft.drawPixel(x0, yy0, TFT_WHITE);
+    lv_label_set_text(label_test,"FUUUUCK");
+
+    lv_obj_add_event_cb(btn_test,btn_test_callback,LV_EVENT_CLICKED,NULL);
+
+
+
     
-    // Draw main quadrant dots
-    if(i==0 || i==180) tft.fillCircle(x0, yy0, 2, TFT_WHITE);
-    if(i==90 || i==270) tft.fillCircle(x0, yy0, 2, TFT_WHITE);
-  }
-
-  tft.fillCircle(120, 121, 3, TFT_WHITE);
-
-  // Draw text at position 120,260 using fonts 4
-  // Only font numbers 2,4,6,7 are valid. Font 6 only contains characters [space] 0 1 2 3 4 5 6 7 8 9 : . - a p m
-  // Font 7 is a 7 segment font and only contains characters [space] 0 1 2 3 4 5 6 7 8 9 : .
-  tft.drawCentreString("Time flies",120,260,4);
-
-  targetTime = millis() + 1000; 
 }
 
+/*-------------------屏幕刷新、获取触摸点函数---------------------*/
+void my_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+    uint32_t w = (area->x2 - area->x1 + 1);
+    uint32_t h = (area->y2 - area->y1 + 1);
+
+    tft.startWrite();
+    tft.setAddrWindow(area->x1, area->y1, w, h);
+    tft.pushColors(&color_p->full, w * h, true);
+    tft.endWrite();
+
+    lv_disp_flush_ready(disp);
+}
+
+
+  void my_touchpad_read(lv_indev_drv_t * indev_driver, lv_indev_data_t * data)
+{
+    uint16_t touchX, touchY;
+
+    bool touched = tft.getTouch(&touchX, &touchY, 600);
+
+    if(!touched) {
+      data->state = LV_INDEV_STATE_REL;
+    } else {
+      data->state = LV_INDEV_STATE_PR;
+	
+      /*Set the coordinates*/
+      data->point.x = touchX;
+      data->point.y = touchY;
+
+      Serial.print("Data x");
+      Serial.println(touchX);
+
+      Serial.print("Data y");
+      Serial.println(touchY);
+    }
+
+}
+
+
+/*-------------------初始化---------------------*/
+void setup() {
+    Serial.begin(115200);
+
+    //初始化
+    lv_init();
+    tft.begin();
+    tft.setRotation(TFT_ROTATIOON);
+
+    //屏幕校准
+    uint16_t calData[5] = { 272, 3250, 282, 3437, 1 };
+    tft.setTouch( calData );
+
+    //缓冲区初始化
+    lv_disp_draw_buf_init( &draw_buf, buf, NULL, screenWidth * 10 );
+
+    //初始化屏幕  init——register
+    static lv_disp_drv_t disp_drv;
+    lv_disp_drv_init(&disp_drv);
+    disp_drv.hor_res=screenWidth;
+    disp_drv.ver_res=screenHeight;
+
+    //连接屏幕刷新函数
+    disp_drv.flush_cb=my_disp_flush;
+    disp_drv.draw_buf=&draw_buf;
+
+    lv_disp_drv_register(&disp_drv);
+
+
+    //初始化触摸 init——register
+    static lv_indev_drv_t indev_drv;
+    lv_indev_drv_init(&indev_drv);
+    indev_drv.type=LV_INDEV_TYPE_POINTER;
+    indev_drv.read_cb=my_touchpad_read;
+    lv_indev_drv_register(&indev_drv);
+
+    //任务的优先级和分配的内存大小 按照韦东山的例程
+    xTaskCreate(lv_task_handler_rtos,"RTOS",512,NULL,tskIDLE_PRIORITY+3,NULL);
+    lv_create_btn_test();
+
+    
+}
+
+
+/*----------------------------------------*/
 void loop() {
-  if (targetTime < millis()) {
-    targetTime += 1000;
-    ss++;              // Advance second
-    if (ss==60) {
-      ss=0;
-      mm++;            // Advance minute
-      if(mm>59) {
-        mm=0;
-        hh++;          // Advance hour
-        if (hh>23) {
-          hh=0;
-        }
-      }
-    }
 
-    // Pre-compute hand degrees, x & y coords for a fast screen update
-    sdeg = ss*6;                  // 0-59 -> 0-354
-    mdeg = mm*6+sdeg*0.01666667;  // 0-59 -> 0-360 - includes seconds
-    hdeg = hh*30+mdeg*0.0833333;  // 0-11 -> 0-360 - includes minutes and seconds
-    hx = cos((hdeg-90)*0.0174532925);    
-    hy = sin((hdeg-90)*0.0174532925);
-    mx = cos((mdeg-90)*0.0174532925);    
-    my = sin((mdeg-90)*0.0174532925);
-    sx = cos((sdeg-90)*0.0174532925);    
-    sy = sin((sdeg-90)*0.0174532925);
-
-    if (ss==0 || initial) {
-      initial = 0;
-      // Erase hour and minute hand positions every minute
-      tft.drawLine(ohx, ohy, 120, 121, TFT_BLACK);
-      ohx = hx*62+121;    
-      ohy = hy*62+121;
-      tft.drawLine(omx, omy, 120, 121, TFT_BLACK);
-      omx = mx*84+120;    
-      omy = my*84+121;
-    }
-
-      // Redraw new hand positions, hour and minute hands not erased here to avoid flicker
-      tft.drawLine(osx, osy, 120, 121, TFT_BLACK);
-      osx = sx*90+121;    
-      osy = sy*90+121;
-      tft.drawLine(osx, osy, 120, 121, TFT_RED);
-      tft.drawLine(ohx, ohy, 120, 121, TFT_WHITE);
-      tft.drawLine(omx, omy, 120, 121, TFT_WHITE);
-      tft.drawLine(osx, osy, 120, 121, TFT_RED);
-
-    tft.fillCircle(120, 121, 3, TFT_RED);
-  }
+  /*-------------------添加LVGL心跳&任务处理器---------------------*/
+  //lv_conf.h文件中使能 #define LV_TICK_CUSTOM 1  即可不用手动配置心跳
+    // lv_timer_handler();
+    // delay(5);
+    vTaskDelay(5);
+    
 }
 
-static uint8_t conv2d(const char* p) {
-  uint8_t v = 0;
-  if ('0' <= *p && *p <= '9')
-    v = *p - '0';
-  return 10 * v + *++p - '0';
+/*---------------------FreeRTOS Tasks----------------*/
+void lv_task_handler_rtos(void *param){
+    lv_timer_handler();
+    vTaskDelay(pdMS_TO_TICKS(5));
 }
-
