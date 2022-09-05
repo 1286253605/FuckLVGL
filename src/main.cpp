@@ -4,9 +4,9 @@
 #include<TFT_eSPI.h>
 
 /*-------------------宏定义---------------------*/
-#define TFT_ROTATIOON 0
-#define SCR_WIDTH 240
-#define SCR_HEIGHT 320
+#define TFT_ROTATIOON 1
+#define SCR_WIDTH 320
+#define SCR_HEIGHT 240
 
 
 /*-------------------全局变量---------------------*/
@@ -120,14 +120,14 @@ void setup() {
     lv_disp_drv_register(&disp_drv);
 
 
-    //初始化触摸 init——register
+    //初始化触摸 init——register。根据type设置输入设备类型
     static lv_indev_drv_t indev_drv;
     lv_indev_drv_init(&indev_drv);
     indev_drv.type=LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb=my_touchpad_read;
     lv_indev_drv_register(&indev_drv);
 
-    //任务的优先级和分配的内存大小 按照韦东山的例程
+    //任务的优先级和分配的内存大小 按照韦东山的例程是错误的，处理LVGL任务需要更大的运行内存否则芯片会不断重启
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
     lv_create_btn_test();
 
@@ -148,6 +148,7 @@ void loop() {
 
 /*---------------------FreeRTOS Tasks----------------*/
 void lv_task_handler_rtos(void *param){
+    //处理任务要放在死循环里 ！！别忘了。。
     TickType_t xLastWakeTimer=xTaskGetTickCount();
     for(;;){
         lv_task_handler();
