@@ -11,7 +11,9 @@
 
 
 /*-------------------全局变量---------------------*/
-
+//字体
+//#define LV_FONT_DECLARE(font_name) extern const lv_font_t font_name;
+LV_FONT_DECLARE(myFont);
 
 //屏幕分辨率
 static const uint16_t screenWidth  = SCR_WIDTH;
@@ -55,6 +57,20 @@ void lv_create_pic_test(void){
     lv_img_set_src(img_1,&a9);
     // lv_obj_align() lv_obj_set_align() 两种设置位置的方式 前者需要指定偏移量
     lv_obj_align(img_1,LV_ALIGN_CENTER,0,0);
+}
+
+void lv_create_label_with_Chinese(void){
+    
+    static lv_style_t style_font_Chinese;
+    lv_style_init(&style_font_Chinese);
+    lv_style_set_text_font(&style_font_Chinese,&myFont);
+
+    lv_obj_t *label_CHN=lv_label_create(lv_scr_act());
+    lv_obj_add_style(label_CHN,&style_font_Chinese,LV_STATE_DEFAULT);
+    lv_obj_align(label_CHN,LV_ALIGN_TOP_LEFT,0,0);
+    lv_label_set_text(label_CHN,"海棠零我好喜欢你啊为了你我要唱猫中毒!");
+    
+
 }
 
 /*-------------------屏幕刷新、获取触摸点回调函数---------------------*/
@@ -136,7 +152,8 @@ void setup() {
     //任务的优先级和分配的内存大小 按照韦东山的例程是错误的，处理LVGL任务需要更大的运行内存否则芯片会不断重启
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
     // lv_create_btn_test();
-    lv_create_pic_test();
+    // lv_create_pic_test();
+    lv_create_label_with_Chinese();
 
     
 }
