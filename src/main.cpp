@@ -50,9 +50,10 @@ void lv_create_btn_test(void){
 }
 
 void lv_create_pic_test(void){
-    LV_IMG_DECLARE(haitangling_map);
+    LV_IMG_DECLARE(a9);
     lv_obj_t *img_1=lv_img_create(lv_scr_act());
-    lv_img_set_src(img_1,&haitangling_map);
+    lv_img_set_src(img_1,&a9);
+    // lv_obj_align() lv_obj_set_align() 两种设置位置的方式 前者需要指定偏移量
     lv_obj_align(img_1,LV_ALIGN_CENTER,0,0);
 }
 
@@ -134,8 +135,8 @@ void setup() {
 
     //任务的优先级和分配的内存大小 按照韦东山的例程是错误的，处理LVGL任务需要更大的运行内存否则芯片会不断重启
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
-    lv_create_btn_test();
-    // lv_create_pic_test();
+    // lv_create_btn_test();
+    lv_create_pic_test();
 
     
 }
