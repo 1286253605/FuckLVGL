@@ -2,7 +2,7 @@
 #include<SPI.h>
 #include<lvgl.h>
 #include<TFT_eSPI.h>
-
+#include "BluetoothA2DPSink.h"
 
 /*-------------------宏定义---------------------*/
 #define TFT_ROTATIOON 1
@@ -25,6 +25,10 @@ static lv_color_t buf[ screenWidth * 10 ];
 
 //屏幕驱动
 TFT_eSPI tft=TFT_eSPI();
+
+
+//蓝牙
+BluetoothA2DPSink a2dp_sink;
 
 //任务、
 void lv_task_handler_rtos(void *param);
@@ -197,6 +201,10 @@ void setup() {
 
     //任务的优先级和分配的内存大小 按照韦东山的例程是错误的，处理LVGL任务需要更大的运行内存否则芯片会不断重启
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
+
+    //初始化LVGL后初始化蓝牙
+    a2dp_sink.start("SennheiserAMBEO");
+
     // lv_create_btn_test();
     // lv_create_pic_test();
     // lv_create_label_with_Chinese();
