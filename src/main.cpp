@@ -3,9 +3,11 @@
 #include<lvgl.h>
 #include<TFT_eSPI.h>
 #include "BluetoothA2DPSink.h"
-
+#include<app.h>
 /*-------------------宏定义---------------------*/
-#define TFT_ROTATIOON 1
+#define TFT_ROTATIOON 1     //旋转以后才是
+//这两个宽和高不是给TFTe_SPI用的，是给LVGL用的，所以修改这两个并不能正确旋转屏幕
+//W H for  LVGL
 #define SCR_WIDTH 320
 #define SCR_HEIGHT 240
 
@@ -14,6 +16,8 @@
 //字体
 //#define LV_FONT_DECLARE(font_name) extern const lv_font_t font_name;
 LV_FONT_DECLARE(myFont);
+
+
 
 //屏幕分辨率
 static const uint16_t screenWidth  = SCR_WIDTH;
@@ -30,8 +34,11 @@ TFT_eSPI tft=TFT_eSPI();
 //蓝牙
 BluetoothA2DPSink a2dp_sink;
 
-//任务、
+//任务
 void lv_task_handler_rtos(void *param);
+
+//函数声明
+void bluetooth_init();
 
 /*-------------------LVGL事件回调---------------------*/
 void btn_test_callback(lv_event_t* event){
@@ -188,8 +195,10 @@ void setup() {
     //连接屏幕刷新函数
     disp_drv.flush_cb=my_disp_flush;
     disp_drv.draw_buf=&draw_buf;
-
-    lv_disp_drv_register(&disp_drv);
+    //在LVGL中旋转屏幕而不是在tft中
+    // disp_drv.sw_rotate=1;               // add for rotation
+    // disp_drv.rotated=LV_DISP_ROT_90;    // add for rotation
+    lv_disp_drv_register(&disp_drv);    
 
 
     //初始化触摸 init——register。根据type设置输入设备类型
@@ -203,11 +212,12 @@ void setup() {
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
 
     //初始化LVGL后初始化蓝牙
-    a2dp_sink.start("SennheiserAMBEO");
+    bluetooth_init();
 
     // lv_create_btn_test();
     // lv_create_pic_test();
     // lv_create_label_with_Chinese();
+    test_tabview_1();
 
     
 }
@@ -234,4 +244,15 @@ void lv_task_handler_rtos(void *param){
         vTaskDelayUntil(&xLastWakeTimer,pdMS_TO_TICKS(5));
     }
 
+}
+
+void bluetooth_init(){
+    i2s_pin_config_t my_pin_config={
+        .bck_io_num=26,
+        .ws_io_num=27,
+        .data_out_num=25,
+        .data_in_num=I2S_PIN_NO_CHANGE
+    };
+    a2dp_sink.set_pin_config(my_pin_config);
+    a2dp_sink.start("SennheiserAMBEO");
 }
