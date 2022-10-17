@@ -1,4 +1,8 @@
 #include<lvgl.h>
+#include "BluetoothA2DPSink.h"
+extern BluetoothA2DPSink a2dp_sink;
+
+
 //私有宏定义
 #define MUSIC_BUTTON_ROW 1          //表示播放等一排按钮的位置
 
@@ -19,23 +23,23 @@ static void slider_event_cb(lv_event_t* e)
 
 
 static void btn_play_cb(lv_event_t* event){
-
+    a2dp_sink.play();
 }
 
 static void btn_pause_cb(lv_event_t* event){
-    
+    a2dp_sink.pause();
 }
 
 static void btn_next_cb(lv_event_t* event){
-    
+    a2dp_sink.next();
 }
 
 static void btn_prev_cb(lv_event_t* event){
-    
+    a2dp_sink.previous();
 }
 
 static void btn_stop_cb(lv_event_t* event){
-    
+    a2dp_sink.stop();
 }
 
 void test_tabview_1(void) {
@@ -135,7 +139,9 @@ void test_tabview_1(void) {
     lv_img_set_src(img_btn_pause, LV_SYMBOL_PAUSE);
     lv_obj_center(img_btn_pause);
     lv_obj_set_grid_cell(btn_pause, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
-    
+    //添加回调函数
+    lv_obj_add_event_cb(btn_pause,btn_pause_cb,LV_EVENT_CLICKED,NULL);
+
     /*下一首按钮*/
     lv_obj_t* btn_next = lv_btn_create(container_main_grid);
     lv_obj_t* img_btn_next = lv_img_create(btn_next);
@@ -143,6 +149,8 @@ void test_tabview_1(void) {
     lv_img_set_src(img_btn_next, LV_SYMBOL_NEXT);
     lv_obj_center(img_btn_next);
     lv_obj_set_grid_cell(btn_next, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
+    //添加回调函数
+    lv_obj_add_event_cb(btn_next,btn_next_cb,LV_EVENT_CLICKED,NULL);
 
     /*上一首按钮*/
     lv_obj_t* btn_prev = lv_btn_create(container_main_grid);
@@ -151,6 +159,8 @@ void test_tabview_1(void) {
     lv_img_set_src(img_btn_prev, LV_SYMBOL_PREV);
     lv_obj_center(img_btn_prev);
     lv_obj_set_grid_cell(btn_prev, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
+    //添加回调函数
+    lv_obj_add_event_cb(btn_prev,btn_prev_cb,LV_EVENT_CLICKED,NULL);
 
     /*停止按钮*/
     lv_obj_t* btn_stop = lv_btn_create(container_main_grid);
@@ -159,6 +169,8 @@ void test_tabview_1(void) {
     lv_img_set_src(img_btn_stop, LV_SYMBOL_STOP);
     lv_obj_center(img_btn_stop);
     lv_obj_set_grid_cell(btn_stop, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
+    //添加回调函数
+    lv_obj_add_event_cb(btn_stop,btn_stop_cb,LV_EVENT_CLICKED,NULL);
 
     /*创建音量控制滑动条*/
         /*Create a slider in the center of the display*/

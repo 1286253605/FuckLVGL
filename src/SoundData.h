@@ -13,7 +13,6 @@
 // Copyright 2020 Phil Schatzmann
 
 #pragma once
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <algorithm>    // std::min
