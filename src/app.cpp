@@ -1,4 +1,5 @@
 #include<lvgl.h>
+#include<Arduino.h>
 #include "BluetoothA2DPSink.h"
 extern BluetoothA2DPSink a2dp_sink;
 
@@ -8,7 +9,10 @@ extern BluetoothA2DPSink a2dp_sink;
 
 //控件变量：
 static lv_obj_t* slider_label;      //回调函数需要用到此变量来展示当前值，所以设置为全局变量
+static lv_obj_t* slider;
 
+//数值
+static uint8_t volume_main=0;
 
 /*--------------回调函数---------------*/
 static void slider_event_cb(lv_event_t* e)
@@ -40,6 +44,16 @@ static void btn_prev_cb(lv_event_t* event){
 
 static void btn_stop_cb(lv_event_t* event){
     a2dp_sink.stop();
+}
+
+static void slider_change_cb(lv_event_t* event){
+    if(!lv_slider_is_dragged(slider)){
+        //如果不处于拖动状态，则获取当前值并修改
+        volume_main=lv_slider_get_value(slider);
+        a2dp_sink.set_volume(volume_main);
+        String buf=""+volume_main;
+        lv_label_set_text(slider_label,(const char*)(buf.c_str()));
+    }
 }
 
 void test_tabview_1(void) {
@@ -174,12 +188,13 @@ void test_tabview_1(void) {
 
     /*创建音量控制滑动条*/
         /*Create a slider in the center of the display*/
-    lv_obj_t* slider = lv_slider_create(container_main_grid);
+    slider = lv_slider_create(container_main_grid);
     lv_slider_set_range(slider, 0, 100);
     lv_slider_set_value(slider, 40, LV_ANIM_OFF);
     lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
     //布局在控制按钮下面一排 占四个格子 
     lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_STRETCH, 1,4, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW+1, 1);
+    lv_obj_add_event_cb(slider,slider_change_cb,LV_EVENT_VALUE_CHANGED,NULL);
 
     /*Create a label below the slider*/
     slider_label = lv_label_create(container_main_grid);

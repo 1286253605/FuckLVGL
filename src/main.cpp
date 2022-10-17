@@ -16,8 +16,9 @@
 //字体
 //#define LV_FONT_DECLARE(font_name) extern const lv_font_t font_name;
 LV_FONT_DECLARE(myFont);
-
-
+//控制音量
+extern lv_obj_t* slider_label;
+extern lv_obj_t* slider;
 
 //屏幕分辨率
 static const uint16_t screenWidth  = SCR_WIDTH;
@@ -39,6 +40,9 @@ void lv_task_handler_rtos(void *param);
 
 //函数声明
 void bluetooth_init();
+void simple_bluetooth_init();
+
+
 
 /*-------------------LVGL事件回调---------------------*/
 void btn_test_callback(lv_event_t* event){
@@ -212,7 +216,10 @@ void setup() {
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
 
     //初始化LVGL后初始化蓝牙
-    bluetooth_init();
+    // bluetooth_init();
+    simple_bluetooth_init();
+    //
+
 
     // lv_create_btn_test();
     // lv_create_pic_test();
@@ -246,6 +253,8 @@ void lv_task_handler_rtos(void *param){
 
 }
 
+
+/*---------------------Functions----------------------*/
 void bluetooth_init(){
     i2s_pin_config_t my_pin_config={
         .bck_io_num=26,
@@ -255,4 +264,16 @@ void bluetooth_init(){
     };
     a2dp_sink.set_pin_config(my_pin_config);
     a2dp_sink.start("SennheiserAMBEO");
+}
+void simple_bluetooth_init(){
+    a2dp_sink.start("SennheiserAMBEO");
+    //等待连接
+    while(!a2dp_sink.is_connected()){
+        a2dp_sink.set_volume(0);
+    }
+    // Serial.println(a2dp_sink.get_volume());
+    //确认连接之后再设置音量
+    a2dp_sink.set_volume(20);
+    lv_slider_set_value(slider,20,LV_ANIM_OFF);
+    lv_label_set_text(slider_label,"20");
 }
