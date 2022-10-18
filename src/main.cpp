@@ -215,8 +215,8 @@ void setup() {
     //任务的优先级和分配的内存大小 按照韦东山的例程是错误的，处理LVGL任务需要更大的运行内存否则芯片会不断重启
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
 
-    
-    //初始化LVGL后初始化蓝牙
+
+    //需要先初始化蓝牙再初始化LVGL
     // bluetooth_init();
     simple_bluetooth_init();
     //
@@ -269,6 +269,7 @@ void bluetooth_init(){
     a2dp_sink.start("SennheiserAMBEO");
 }
 void simple_bluetooth_init(){
+    a2dp_sink.set_volume(30);
     a2dp_sink.start("SennheiserAMBEO");
     
 }

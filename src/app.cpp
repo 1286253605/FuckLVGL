@@ -6,23 +6,26 @@ extern BluetoothA2DPSink a2dp_sink;
 
 //私有宏定义
 #define MUSIC_BUTTON_ROW 1          //表示播放等一排按钮的位置
+#define MUSIC_BUTTON_WIDTH 40
+#define MUSIC_BUTTON_HEIGHT 35
 
 //控件变量：（如果使用static修饰变量则无法跨文件调用
 lv_obj_t* slider_label;      //回调函数需要用到此变量来展示当前值，所以设置为全局变量
 lv_obj_t* slider;
 
 //数值
-static uint8_t volume_main=0;
+int volume_main=0;      //音量
 
 /*--------------回调函数---------------*/
-static void slider_event_cb(lv_event_t* e)
-{
-    lv_obj_t* slider = lv_event_get_target(e);
-    char buf[8];
-    lv_snprintf(buf, sizeof(buf), "%d%%", (int)lv_slider_get_value(slider));
-    lv_label_set_text(slider_label, buf);
-    lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
-}
+
+// static void slider_event_cb(lv_event_t* e)
+// {
+//     lv_obj_t* slider = lv_event_get_target(e);
+//     char buf[8];
+//     lv_snprintf(buf, sizeof(buf), "%d%%", (int)lv_slider_get_value(slider));
+//     lv_label_set_text(slider_label, buf);
+//     lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+// }
 
 
 
@@ -44,6 +47,30 @@ static void btn_prev_cb(lv_event_t* event){
 
 static void btn_stop_cb(lv_event_t* event){
     a2dp_sink.stop();
+}
+
+static void btn_vol_add_cb(lv_event_t* event){
+    char buf[8];
+    volume_main =(int)a2dp_sink.get_volume();
+    if(volume_main<120){
+        //限制音量范围
+        volume_main+=10;
+        a2dp_sink.set_volume(volume_main);
+    }
+    lv_snprintf(buf,sizeof(buf),"%d%%",volume_main);
+    lv_label_set_text(slider_label,buf);
+}
+
+static void btn_vol_dec_cb(lv_event_t* event){
+    char buf[8];
+    volume_main =(int)a2dp_sink.get_volume();
+    Serial.println(volume_main);
+    if(volume_main>10){
+        volume_main-=10;
+        a2dp_sink.set_volume(volume_main);
+    }
+    lv_snprintf(buf,sizeof(buf),"%d%%",volume_main);
+    lv_label_set_text(slider_label,buf);
 }
 
 
@@ -127,7 +154,7 @@ void test_tabview_1(void) {
     /*播放按钮*/
     //创建标签图标按钮——
     lv_obj_t* btn_play = lv_btn_create(container_main_grid);//如果父对象不是container 则无法使用网格布局
-    lv_obj_set_size(btn_play, 30, 30);
+    lv_obj_set_size(btn_play, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
     //lv_obj_center(btn_play);
     //按钮图片
     lv_obj_t* img_btn_play = lv_img_create(btn_play);
@@ -141,7 +168,7 @@ void test_tabview_1(void) {
     /*暂停按钮*/
     lv_obj_t* btn_pause = lv_btn_create(container_main_grid);
     lv_obj_t* img_btn_pause = lv_img_create(btn_pause);
-    lv_obj_set_size(btn_pause, 30, 30);
+    lv_obj_set_size(btn_pause, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
     lv_img_set_src(img_btn_pause, LV_SYMBOL_PAUSE);
     lv_obj_center(img_btn_pause);
     lv_obj_set_grid_cell(btn_pause, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
@@ -151,7 +178,7 @@ void test_tabview_1(void) {
     /*下一首按钮*/
     lv_obj_t* btn_next = lv_btn_create(container_main_grid);
     lv_obj_t* img_btn_next = lv_img_create(btn_next);
-    lv_obj_set_size(btn_next, 30, 30);
+    lv_obj_set_size(btn_next, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
     lv_img_set_src(img_btn_next, LV_SYMBOL_NEXT);
     lv_obj_center(img_btn_next);
     lv_obj_set_grid_cell(btn_next, LV_GRID_ALIGN_CENTER, 3, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
@@ -161,7 +188,7 @@ void test_tabview_1(void) {
     /*上一首按钮*/
     lv_obj_t* btn_prev = lv_btn_create(container_main_grid);
     lv_obj_t* img_btn_prev = lv_img_create(btn_prev);
-    lv_obj_set_size(btn_prev, 30, 30);
+    lv_obj_set_size(btn_prev, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
     lv_img_set_src(img_btn_prev, LV_SYMBOL_PREV);
     lv_obj_center(img_btn_prev);
     lv_obj_set_grid_cell(btn_prev, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
@@ -171,27 +198,45 @@ void test_tabview_1(void) {
     /*停止按钮*/
     lv_obj_t* btn_stop = lv_btn_create(container_main_grid);
     lv_obj_t* img_btn_stop = lv_img_create(btn_stop);
-    lv_obj_set_size(btn_stop, 30, 30);
+    lv_obj_set_size(btn_stop, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
     lv_img_set_src(img_btn_stop, LV_SYMBOL_STOP);
     lv_obj_center(img_btn_stop);
     lv_obj_set_grid_cell(btn_stop, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
     //添加回调函数
     lv_obj_add_event_cb(btn_stop,btn_stop_cb,LV_EVENT_CLICKED,NULL);
 
-    /*创建音量控制滑动条*/
-        /*Create a slider in the center of the display*/
-    slider = lv_slider_create(container_main_grid);
-    lv_slider_set_range(slider, 0, 100);
-    lv_slider_set_value(slider, 40, LV_ANIM_OFF);
-    lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
-    //布局在控制按钮下面一排 占四个格子 
-    lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_STRETCH, 1,4, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW+1, 1);
+    //取消使用滑动条控制音量方案
+    // /*创建音量控制滑动条*/
+    //     /*Create a slider in the center of the display*/
+    // slider = lv_slider_create(container_main_grid);
+    // lv_slider_set_range(slider, 0, 100);
+    // lv_slider_set_value(slider, 40, LV_ANIM_OFF);
+    // lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+    // //布局在控制按钮下面一排 占四个格子 
+    // lv_obj_set_grid_cell(slider, LV_GRID_ALIGN_STRETCH, 1,4, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW+1, 1);
     
+    /*创建音量控制按钮ADD*/
+    lv_obj_t* btn_vol_add = lv_btn_create(container_main_grid);
+    lv_obj_t* img_btn_vol_add = lv_img_create(btn_vol_add);
+    lv_obj_set_size(btn_vol_add, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
+    lv_img_set_src(img_btn_vol_add, LV_SYMBOL_PLUS);
+    lv_obj_center(img_btn_vol_add);
+    lv_obj_set_grid_cell(btn_vol_add, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW+1, 1);
+    lv_obj_add_event_cb(btn_vol_add,btn_vol_add_cb,LV_EVENT_CLICKED,NULL);
+
+    /*创建音量控制按钮DEC*/
+    lv_obj_t* btn_vol_dec = lv_btn_create(container_main_grid);
+    lv_obj_t* img_btn_vol_dec = lv_img_create(btn_vol_dec);
+    lv_obj_set_size(btn_vol_dec, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
+    lv_img_set_src(img_btn_vol_dec, LV_SYMBOL_MINUS);
+    lv_obj_center(img_btn_vol_dec);
+    lv_obj_set_grid_cell(btn_vol_dec, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW + 1, 1);
+    lv_obj_add_event_cb(btn_vol_dec,btn_vol_dec_cb,LV_EVENT_CLICKED,NULL);
 
     /*Create a label below the slider*/
     slider_label = lv_label_create(container_main_grid);
     lv_label_set_text(slider_label, "40%");
-    lv_obj_set_grid_cell(slider_label, LV_GRID_ALIGN_STRETCH,0, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW + 1, 1);
+    lv_obj_set_grid_cell(slider_label, LV_GRID_ALIGN_STRETCH,1, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW + 1, 1);
     
 }
 
