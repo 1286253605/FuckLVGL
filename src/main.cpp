@@ -215,10 +215,13 @@ void setup() {
     //任务的优先级和分配的内存大小 按照韦东山的例程是错误的，处理LVGL任务需要更大的运行内存否则芯片会不断重启
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
 
+    
     //初始化LVGL后初始化蓝牙
     // bluetooth_init();
     simple_bluetooth_init();
     //
+    
+
 
 
     // lv_create_btn_test();
@@ -226,7 +229,7 @@ void setup() {
     // lv_create_label_with_Chinese();
     test_tabview_1();
 
-    
+
 }
 
 
@@ -267,13 +270,5 @@ void bluetooth_init(){
 }
 void simple_bluetooth_init(){
     a2dp_sink.start("SennheiserAMBEO");
-    //等待连接
-    while(!a2dp_sink.is_connected()){
-        a2dp_sink.set_volume(0);
-    }
-    // Serial.println(a2dp_sink.get_volume());
-    //确认连接之后再设置音量
-    a2dp_sink.set_volume(20);
-    lv_slider_set_value(slider,20,LV_ANIM_OFF);
-    lv_label_set_text(slider_label,"20");
+    
 }
