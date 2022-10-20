@@ -12,6 +12,9 @@ extern BluetoothA2DPSink a2dp_sink;
 //控件变量：（如果使用static修饰变量则无法跨文件调用
 lv_obj_t* slider_label;      //回调函数需要用到此变量来展示当前值，所以设置为全局变量
 lv_obj_t* slider;
+//蓝牙控制相关变量
+static lv_obj_t* btn_blu_label;
+uint8_t is_blu_connected = 1;
 
 //数值
 int volume_main=0;      //音量
@@ -73,6 +76,25 @@ static void btn_vol_dec_cb(lv_event_t* event){
     lv_label_set_text(slider_label,buf);
 }
 
+/**
+ * @brief 点击按钮切换文本状态 
+ * @param e 
+*/
+
+static void btn_blu_check_cb(lv_event_t* e) {
+    if (is_blu_connected==1) {
+        //按下按钮 原来是连接状态 切换到断开蓝牙模式
+        is_blu_connected = 0;
+        a2dp_sink.end();
+        lv_label_set_text(btn_blu_label, "BLU OFF");
+    }
+    else if (is_blu_connected == 0) {
+        //按下按钮 原来是断开状态 切换到连接蓝牙模式
+        is_blu_connected = 1;
+        a2dp_sink.start("SennheiserAMBEO");
+        lv_label_set_text(btn_blu_label, "BLU ON");
+    }
+}
 
 
 void test_tabview_1(void) {
@@ -233,6 +255,17 @@ void test_tabview_1(void) {
     lv_obj_set_grid_cell(btn_vol_dec, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW + 1, 1);
     lv_obj_add_event_cb(btn_vol_dec,btn_vol_dec_cb,LV_EVENT_CLICKED,NULL);
 
+
+        /*创建蓝牙连接/断开按钮*/
+    lv_obj_t* btn_blu_toggle = lv_btn_create(container_main_grid);
+    btn_blu_label = lv_label_create(btn_blu_toggle);
+    lv_obj_set_size(btn_blu_toggle, MUSIC_BUTTON_WIDTH*2, MUSIC_BUTTON_HEIGHT);
+    lv_obj_center(btn_blu_label);
+    lv_label_set_text(btn_blu_label,"BLU ON");
+    lv_obj_add_flag(btn_blu_toggle, LV_OBJ_FLAG_CHECKABLE);
+    lv_obj_add_event_cb(btn_blu_toggle, btn_blu_check_cb, LV_EVENT_CLICKED, NULL);
+    
+    lv_obj_set_grid_cell(btn_blu_toggle, LV_GRID_ALIGN_CENTER, 3, 2, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW + 1, 1);
     /*Create a label below the slider*/
     slider_label = lv_label_create(container_main_grid);
     lv_label_set_text(slider_label, "40%");
