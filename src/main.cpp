@@ -4,6 +4,13 @@
 #include<TFT_eSPI.h>
 #include "BluetoothA2DPSink.h"
 
+//GUI Guider相关
+#include"gui_guider.h"
+#include"events_init.h"
+#include"custom.h"
+lv_ui guider_ui;
+
+
 //测试新的GUI分支
 //测试2
 /*-------------------宏定义---------------------*/
@@ -38,7 +45,7 @@ BluetoothA2DPSink a2dp_sink;
 void lv_task_handler_rtos(void *param);
 
 //函数声明
-void bluetooth_init();
+// void bluetooth_init();
 void simple_bluetooth_init();
 
 
@@ -110,9 +117,6 @@ void setup() {
     //连接屏幕刷新函数
     disp_drv.flush_cb=my_disp_flush;
     disp_drv.draw_buf=&draw_buf;
-    //在LVGL中旋转屏幕而不是在tft中
-    // disp_drv.sw_rotate=1;               // add for rotation
-    // disp_drv.rotated=LV_DISP_ROT_90;    // add for rotation
     lv_disp_drv_register(&disp_drv);    
 
 
@@ -130,7 +134,10 @@ void setup() {
     //需要先初始化蓝牙再初始化LVGL
     simple_bluetooth_init();
     
-    
+    //创建GUI
+    setup_ui(&guider_ui);
+    events_init(&guider_ui);
+    custom_init(&guider_ui);
     
     
     
@@ -142,10 +149,6 @@ void setup() {
 /*----------------------------------------*/
 void loop() {
 
-  /*-------------------添加LVGL心跳&任务处理器---------------------*/
-  //lv_conf.h文件中使能 #define LV_TICK_CUSTOM 1  即可不用手动配置心跳
-    // lv_timer_handler();
-    // delay(5);
     vTaskDelay(pdMS_TO_TICKS(5));
     
 }
