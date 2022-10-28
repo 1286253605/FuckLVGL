@@ -4,6 +4,7 @@
 #include<TFT_eSPI.h>
 #include "BluetoothA2DPSink.h"
 #include<app.h>
+//测试新的GUI分支
 /*-------------------宏定义---------------------*/
 #define TFT_ROTATIOON 1     //旋转以后才是
 //这两个宽和高不是给TFTe_SPI用的，是给LVGL用的，所以修改这两个并不能正确旋转屏幕
