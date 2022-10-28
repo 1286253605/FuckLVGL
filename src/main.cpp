@@ -3,7 +3,7 @@
 #include<lvgl.h>
 #include<TFT_eSPI.h>
 #include "BluetoothA2DPSink.h"
-#include<app.h>
+
 //测试新的GUI分支
 //测试2
 /*-------------------宏定义---------------------*/
@@ -18,9 +18,6 @@
 //字体
 //#define LV_FONT_DECLARE(font_name) extern const lv_font_t font_name;
 LV_FONT_DECLARE(myFont);
-//控制音量
-extern lv_obj_t* slider_label;
-extern lv_obj_t* slider;
 
 //屏幕分辨率
 static const uint16_t screenWidth  = SCR_WIDTH;
@@ -229,7 +226,6 @@ void setup() {
     // lv_create_btn_test();
     // lv_create_pic_test();
     // lv_create_label_with_Chinese();
-    test_tabview_1();
     
     
     
