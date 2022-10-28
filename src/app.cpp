@@ -8,14 +8,16 @@ extern BluetoothA2DPSink a2dp_sink;
 #define MUSIC_BUTTON_ROW 1          //表示播放等一排按钮的位置
 #define MUSIC_BUTTON_WIDTH 40
 #define MUSIC_BUTTON_HEIGHT 35
+#define PIN_MUTE 12
 
 //控件变量：（如果使用static修饰变量则无法跨文件调用
-lv_obj_t* slider_label;      //回调函数需要用到此变量来展示当前值，所以设置为全局变量
+lv_obj_t* slider_label;             //回调函数需要用到此变量来展示当前值，所以设置为全局变量
 lv_obj_t* slider;
-//蓝牙控制相关变量
-static lv_obj_t* btn_blu_label;
+lv_obj_t* img_btn_stop;             //静音按钮图片
+static lv_obj_t* btn_blu_label;     //蓝牙控制相关变量
 uint8_t is_blu_connected = 1;
-
+//Flags
+uint8_t is_mute=0;  //表示是否静音
 //数值
 int volume_main=0;      //音量
 
@@ -48,8 +50,19 @@ static void btn_prev_cb(lv_event_t* event){
     a2dp_sink.previous();
 }
 
-static void btn_stop_cb(lv_event_t* event){
-    a2dp_sink.stop();
+static void btn_stop_cb(lv_event_t* event) {
+    //停止键太鸡肋了 换成静音键
+    if (is_mute == 1) {
+        lv_img_set_src(img_btn_stop, LV_SYMBOL_VOLUME_MAX);
+        is_mute = 0;
+        digitalWrite(PIN_MUTE,LOW);
+    }
+    else if (is_mute == 0) {
+        lv_img_set_src(img_btn_stop, LV_SYMBOL_MUTE);
+        is_mute = 1;
+        //引脚为高则静音
+        digitalWrite(PIN_MUTE,HIGH);
+    }
 }
 
 static void btn_vol_add_cb(lv_event_t* event){
@@ -86,13 +99,13 @@ static void btn_blu_check_cb(lv_event_t* e) {
         //按下按钮 原来是连接状态 切换到断开蓝牙模式
         is_blu_connected = 0;
         a2dp_sink.end();
-        lv_label_set_text(btn_blu_label, "BLU OFF");
+        lv_label_set_text(btn_blu_label, "BT OFF");
     }
     else if (is_blu_connected == 0) {
         //按下按钮 原来是断开状态 切换到连接蓝牙模式
         is_blu_connected = 1;
         a2dp_sink.start("SennheiserAMBEO");
-        lv_label_set_text(btn_blu_label, "BLU ON");
+        lv_label_set_text(btn_blu_label, "BT ON");
     }
 }
 
@@ -217,11 +230,12 @@ void test_tabview_1(void) {
     //添加回调函数
     lv_obj_add_event_cb(btn_prev,btn_prev_cb,LV_EVENT_CLICKED,NULL);
 
-    /*停止按钮*/
+    /*停止按钮 改为静音按钮*/
     lv_obj_t* btn_stop = lv_btn_create(container_main_grid);
-    lv_obj_t* img_btn_stop = lv_img_create(btn_stop);
+    img_btn_stop = lv_img_create(btn_stop);
     lv_obj_set_size(btn_stop, MUSIC_BUTTON_WIDTH, MUSIC_BUTTON_HEIGHT);
-    lv_img_set_src(img_btn_stop, LV_SYMBOL_STOP);
+    //LV_SYMBOL_VOLUME_MAX LV_SYMBOL_VOLUME_MUTE
+    lv_img_set_src(img_btn_stop, LV_SYMBOL_VOLUME_MAX);
     lv_obj_center(img_btn_stop);
     lv_obj_set_grid_cell(btn_stop, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, MUSIC_BUTTON_ROW, 1);
     //添加回调函数

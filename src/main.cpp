@@ -83,7 +83,7 @@ void lv_create_label_with_Chinese(void){
     lv_obj_t *label_CHN=lv_label_create(lv_scr_act());
     lv_obj_add_style(label_CHN,&style_font_Chinese,LV_STATE_DEFAULT);
     lv_obj_align(label_CHN,LV_ALIGN_TOP_LEFT,0,0);
-    lv_label_set_text(label_CHN,"海棠零我好喜欢你啊为了你我要唱猫中毒!o0oOOo0o00OoOO00oOO");
+    lv_label_set_text(label_CHN,"海棠零o0oOOo0o00OoOO00oOO");
     
 
 }
@@ -228,6 +228,9 @@ void setup() {
     // lv_create_pic_test();
     // lv_create_label_with_Chinese();
     test_tabview_1();
+    
+    
+    
 
 
 }
