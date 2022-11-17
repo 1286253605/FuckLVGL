@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "lvgl.h"
 #include "custom.h"
+#include "BluetoothA2DP.h"
 
 /*********************
  *      DEFINES
@@ -35,6 +36,9 @@ int cur_scr;
 uint8_t is_muted=0;                     //是否已经静音
 uint8_t volume_all=20;                   //音量
 char vol_label_text[20]={0};                 
+
+extern BluetoothA2DPSink a2dp_sink;
+
 /**
  * Create a demo application
  */
@@ -159,7 +163,7 @@ void all_events_handler(lv_event_t *event){
             /* code */
             if((volume_all<120)||(volume_all+10<120)){
                 volume_all+=10;
-                // a2dp_sink.set_volume(volume_all);
+                a2dp_sink.set_volume(volume_all);
                 sprintf(vol_label_text,"%d%%",volume_all);
                 lv_label_set_text(guider_ui.screen_BT_Ctrl_slider_label_main,vol_label_text);
                 // lv_slider_set_value(guider_ui.screen_BT_Ctrl_slider_label_main,volume_all,LV_ANIM_ON);
@@ -175,18 +179,18 @@ void lv_btn_events_handler(lv_event_t*e){
 
 
     if(obj==guider_ui.screen_BT_Ctrl_imgbtn_prev){
-        // a2dp_sink.previous();
+        a2dp_sink.previous();
     }
 
     else if (obj==guider_ui.screen_BT_Ctrl_imgbtn_pause){
-        // a2dp_sink.pause();
+        a2dp_sink.pause();
     }
     
     else if (obj==guider_ui.screen_BT_Ctrl_imgbtn_next){
-        // a2dp_sink.next();
+        a2dp_sink.next();
     }
     else if (obj==guider_ui.screen_BT_Ctrl_imgbtn_play){
-        // a2dp_sink.play();
+        a2dp_sink.play();
     }
 
     else if(obj==guider_ui.screen_BT_Ctrl_imgbtn_mute){
@@ -203,7 +207,7 @@ void lv_btn_events_handler(lv_event_t*e){
     else if(obj==guider_ui.screen_BT_Ctrl_imgbtn_vol_add){
         if((volume_all<120)||(volume_all+10<120)){
             volume_all+=10;
-            // a2dp_sink.set_volume(volume_all);
+            a2dp_sink.set_volume(volume_all);
             sprintf(vol_label_text,"%d%%",volume_all);
             lv_label_set_text(guider_ui.screen_BT_Ctrl_slider_label_main,vol_label_text);
             lv_slider_set_value(guider_ui.screen_BT_Ctrl_slider_1,volume_all,LV_ANIM_ON);
@@ -213,7 +217,7 @@ void lv_btn_events_handler(lv_event_t*e){
     else if(obj==guider_ui.screen_BT_Ctrl_imgbtn_vol_dec){
         if((volume_all>0)||(volume_all-10>0)){
             volume_all-=10;
-            // a2dp_sink.set_volume(volume_all);
+            a2dp_sink.set_volume(volume_all);
             sprintf(vol_label_text,"%d%%",volume_all);
             lv_label_set_text(guider_ui.screen_BT_Ctrl_slider_label_main,vol_label_text);
             lv_slider_set_value(guider_ui.screen_BT_Ctrl_slider_1,volume_all,LV_ANIM_ON);
@@ -224,8 +228,10 @@ void lv_btn_events_handler(lv_event_t*e){
         volume_all= lv_slider_get_value(obj);
         lv_snprintf(vol_label_text,sizeof(vol_label_text),"%d%%",volume_all);
         lv_label_set_text(guider_ui.screen_BT_Ctrl_slider_label_main,vol_label_text);
-        if(lv_slider_is_dragged(obj)){
-            //a2dp_sink.set_volume(volume_all);
+
+        if(!lv_slider_is_dragged(obj)){
+            //如果已经不再拖动，则修改音量
+            a2dp_sink.set_volume(volume_all);
         }
         
     }
