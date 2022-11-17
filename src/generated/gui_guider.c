@@ -10,11 +10,13 @@
 
 
 void init_scr_del_flag(lv_ui *ui){
-	ui->imgbtn_5_del = true;
+	ui->screen_loading_del = true;
+	ui->screen_BT_Ctrl_del = true;
+	ui->screen_2_del = true;
 }
 
 void setup_ui(lv_ui *ui){
 	init_scr_del_flag(ui);
-	setup_scr_imgbtn_5(ui);
-	lv_scr_load(ui->imgbtn_5);
+	setup_scr_screen_loading(ui);
+	lv_scr_load(ui->screen_loading);
 }

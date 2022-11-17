@@ -7,8 +7,8 @@
     
     #include "lv_font.h"
     
-    LV_FONT_DECLARE(lv_font_Adventpro_regular_20)
-LV_FONT_DECLARE(lv_font_Adventpro_regular_12)
+    LV_FONT_DECLARE(lv_font_Acme_Regular_18)
+LV_FONT_DECLARE(lv_font_simsun_12)
 
     
     #ifdef __cplusplus
