@@ -214,12 +214,11 @@ void lv_btn_events_handler(lv_event_t*e){
 
     else if(obj==guider_ui.screen_BT_Ctrl_imgbtn_mute){
         if(is_muted==0){
-            //高电平静音
-            digitalWrite(MUTE_PIN,HIGH);
+            a2dp_sink.set_volume(0);
             is_muted=1;
         }
         else {
-            digitalWrite(MUTE_PIN,LOW);
+            a2dp_sink.set_volume(volume_all);
             is_muted=0;
         }
     }

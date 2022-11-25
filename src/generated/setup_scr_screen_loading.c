@@ -105,7 +105,7 @@ void setup_scr_screen_loading(lv_ui *ui){
 	lv_style_set_bg_grad_dir(&style_screen_loading_bar_1_main_indicator_default, LV_GRAD_DIR_NONE);
 	lv_style_set_bg_opa(&style_screen_loading_bar_1_main_indicator_default, 255);
 	lv_obj_add_style(ui->screen_loading_bar_1, &style_screen_loading_bar_1_main_indicator_default, LV_PART_INDICATOR|LV_STATE_DEFAULT);
-	lv_obj_set_style_anim_time(ui->screen_loading_bar_1, 1000, 0);
+	lv_obj_set_style_anim_time(ui->screen_loading_bar_1, 2000, 0);
 	lv_bar_set_mode(ui->screen_loading_bar_1, LV_BAR_MODE_NORMAL);
 	lv_bar_set_value(ui->screen_loading_bar_1, 100, LV_ANIM_ON);
 
