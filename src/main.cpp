@@ -131,16 +131,16 @@ void setup() {
     xTaskCreate(lv_task_handler_rtos,"RTOS_LVGLHandler",1024*3,NULL,tskIDLE_PRIORITY+3,NULL);
 
 
-    //需要先初始化蓝牙再初始化LVGL
+
+            //需要先初始化蓝牙再初始化LVGL
     simple_bluetooth_init();
-    
     //创建GUI
     setup_ui(&guider_ui);
     events_init(&guider_ui);
     custom_init(&guider_ui);
     
     
-    
+
 
 
 }
@@ -177,7 +177,6 @@ void bluetooth_init(){
     a2dp_sink.start("SennheiserAMBEO");
 }
 void simple_bluetooth_init(){
-    a2dp_sink.set_volume(30);
     a2dp_sink.start("SennheiserAMBEO");
     
 }

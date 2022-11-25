@@ -20,6 +20,7 @@
 #define LV_DEMO_PRINTER_ANIM_TIME  (150)
 // #define SCR_LOADING 0
 // #define SCR_BT 1
+#define MUTE_PIN 12
 
 /**********************
  *      TYPEDEFS
@@ -34,6 +35,7 @@
  **********************/
 int cur_scr;
 uint8_t is_muted=0;                     //是否已经静音
+uint8_t is_bt_disconnected=0;              //是否已经断开蓝牙
 uint8_t volume_all=20;                   //音量
 char vol_label_text[20]={0};                 
 
@@ -138,6 +140,10 @@ void bt_ctrl_event_init(void){
 
     lv_obj_add_event_cb(guider_ui.screen_BT_Ctrl_slider_1,lv_btn_events_handler,LV_EVENT_VALUE_CHANGED,NULL);
 
+    lv_obj_add_event_cb(guider_ui.screen_BT_Ctrl_imgbtn_mute,lv_btn_events_handler,LV_EVENT_CLICKED,NULL);
+    
+    
+
 }
 
 
@@ -149,6 +155,8 @@ void custom_init(lv_ui *ui)
     cur_scr=SCR_LOADING;
     ui->screen_BT_Ctrl=NULL;
     lv_scr_load(ui->screen_loading);
+    //初始化音量
+    a2dp_sink.set_volume(20);
 
     
 }
@@ -192,15 +200,26 @@ void lv_btn_events_handler(lv_event_t*e){
     else if (obj==guider_ui.screen_BT_Ctrl_imgbtn_play){
         a2dp_sink.play();
     }
+    else if(obj==guider_ui.screen_BT_Ctrl_imgbtn_bt){
+        if(is_bt_disconnected==0){
+            a2dp_sink.disconnect();
+        }
+        else{
+            a2dp_sink.start("SennheiserAMBEO");
+        }
+
+        
+        
+    }
 
     else if(obj==guider_ui.screen_BT_Ctrl_imgbtn_mute){
         if(is_muted==0){
             //高电平静音
-            // digitalWrite(MUTE_PIN,HIGH);
+            digitalWrite(MUTE_PIN,HIGH);
             is_muted=1;
         }
         else {
-            // digitalWrite(MUTE_PIN,LOW);
+            digitalWrite(MUTE_PIN,LOW);
             is_muted=0;
         }
     }
@@ -228,11 +247,7 @@ void lv_btn_events_handler(lv_event_t*e){
         volume_all= lv_slider_get_value(obj);
         lv_snprintf(vol_label_text,sizeof(vol_label_text),"%d%%",volume_all);
         lv_label_set_text(guider_ui.screen_BT_Ctrl_slider_label_main,vol_label_text);
-
-        if(!lv_slider_is_dragged(obj)){
-            //如果已经不再拖动，则修改音量
-            a2dp_sink.set_volume(volume_all);
-        }
+        a2dp_sink.set_volume(volume_all);
         
     }
     

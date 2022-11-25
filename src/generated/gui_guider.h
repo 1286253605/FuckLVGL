@@ -19,6 +19,7 @@ typedef struct
 	bool screen_loading_del;
 	lv_obj_t *screen_loading_imgbtn_load;
 	lv_obj_t *screen_loading_imgbtn_load_label;
+	lv_obj_t *screen_loading_bar_1;
 	lv_obj_t *screen_BT_Ctrl;
 	bool screen_BT_Ctrl_del;
 	lv_obj_t *screen_BT_Ctrl_img_bg;
